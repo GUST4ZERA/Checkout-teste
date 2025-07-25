@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Checkout R$19,90</title>
+</head>
+<body>
+  <h2>Produto Top por R$ 19,90</h2>
+  <button onclick="gerarPix()">Pagar com Pix</button>
+
+  <div id="resultado" style="margin-top:20px;"></div>
+
+  <script>
+    async function gerarPix() {
+      const url = "https://app.ghostspaysv1.com/api/v1/payment";
+      const publicKey = "dc31f553-fea6-42de-b9a8-1b26c5a36635";
+      const secretKey = "7fea3d30-b4f5-4360-9211-9f03537d876c";
+
+      const bodyData = {
+        amount: 1990,
+        name: "Produto Digital",
+        description: "Acesso ao conteúdo premium",
+        expires_in: 3600,
+        type: "pix",
+        callback_url: "https://webhook.site/seu-endpoint-aqui"
+      };
+
+      try {
+        const response = await fetch(url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-public-key": publicKey,
+            "x-secret-key": secretKey
+          },
+          body: JSON.stringify(bodyData)
+        });
+
+        const data = await response.json();
+
+        if (data && data.qr_code) {
+          document.getElementById("resultado").innerHTML = `
+            <p><strong>Copia e Cola Pix:</strong></p>
+            <textarea style="width:100%">${data.qr_code}</textarea>
+            <p><img src="${data.qr_code_base64}" alt="QR Code Pix" /></p>
+          `;
+        } else {
+          document.getElementById("resultado").innerHTML = "<p>Erro ao gerar Pix.</p>";
+          console.log(data);
+        }
+
+      } catch (err) {
+        console.error("Erro:", err);
+        document.getElementById("resultado").innerHTML = "<p>Erro na requisição.</p>";
+      }
+    }
+  </script>
+</body>
+</html>
